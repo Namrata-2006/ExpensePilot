@@ -1,40 +1,106 @@
-# ExpensePilot — Personal Expense Tracker (.NET 10 + WAMP MySQL)
+#  ExpensePilot – Personal Expense Tracker
 
-A responsive personal finance dashboard built with ASP.NET Core MVC, C#, Entity Framework Core 10, and MySQL through WAMP.
+**ExpensePilot** is a personal finance web application designed to help users track income and expenses, monitor budgets, understand spending patterns, and manage their money more effectively.
 
-## Features
-- Dashboard with recorded income, expenses, net cash flow, and remaining budget.
-- Separate monthly income setting saved by month and year.
-- Add income and expenses with category, date, notes, and Need/Want classification.
-- Monthly budget planner with progress bar and spending alerts.
-- Six-month income-vs-spending chart.
-- Spending category breakdown and smart insights.
-- CSV export and transaction deletion.
-- Responsive layout, modal transaction form, and input validation.
+##  Project Information
 
-## Requirements
-- .NET 10 SDK
-- WAMP with MySQL/MariaDB service running
-- A database named `expensepilot_db`
+- **Project Name:** ExpensePilot – Personal Expense Tracker
+- **Student Name:** Namrata Parmar
+- **Enrollment Number:** 202403103510124
+- **Subject:** Web Technology with .NET
+- **Project Type:** Academic / Final-Year Project
 
-## Database setup
-1. Start WAMP and ensure its icon is green.
-2. Open phpMyAdmin at `http://localhost/phpmyadmin`.
-3. Create the database with `CREATE DATABASE expensepilot_db;` if it does not already exist.
-4. Check `appsettings.json`. The default connection assumes MySQL is at `127.0.0.1:3306`, username `root`, and an empty password. Change the connection string if your WAMP credentials differ.
+##  Project Objective
 
-On startup, the application creates tables for a new database and ensures the `MonthlyIncomes` table exists for an existing database too. The other existing tables are not migrated automatically if their schema changes.
+The main objective of ExpensePilot is to make personal financial management easier through a simple, interactive dashboard. It helps users record transactions, review spending, monitor budgets, and understand their financial habits.
 
-## Run
-From the folder containing `ExpensePilot.csproj`:
+##  Features
 
-```powershell
-dotnet restore
-dotnet build
-dotnet run
-```
+-  **Financial Dashboard** – View income, expenses, savings, and remaining budget.
+-  **Transaction Management** – Record and organize income and expenses.
+-  **Budget Planner** – Set budgets and monitor spending against them.
+-  **Spending Analytics** – Visualize monthly spending trends and expense categories.
+-  **Smart Insights** – Display helpful observations about spending habits.
+-  **Transaction History** – Review recent financial activities.
+-  **CSV Export** – Export financial data for further analysis.
+-  **Modern User Interface** – Clean dashboard with charts, summary cards, and organized navigation.
 
-Open the localhost URL shown in the terminal.
+##  Technologies Used
 
-## Monthly income
-Choose the month using the dashboard's month selector. In the Monthly Budget panel, use the Monthly Income section to save or update the expected income for that month. It is stored separately from individual income transactions.
+| Technology | Purpose |
+|---|---|
+| ASP.NET Core MVC | Web application framework |
+| C# | Backend programming |
+| Entity Framework Core | Database access and ORM |
+| SQL Server | Database management |
+| HTML5 | Web page structure |
+| CSS3 | Styling and layout |
+| JavaScript | Interactive functionality |
+| Chart.js (if included in the project) | Financial charts and visualizations |
+
+##  How It Works
+
+1. Open the application and access the dashboard.
+2. Add income and expense transactions.
+3. Organize and review financial records.
+4. Set budgets and monitor spending.
+5. View charts and financial insights.
+6. Export available financial data when required.
+
+##  Application Modules
+
+- Dashboard
+- Transactions
+- Add Transaction
+- Budget Planner
+- Reports
+- Smart Insights
+- Categories
+- Export Data
+
+##  Getting Started
+
+### Prerequisites
+
+Install the following tools:
+
+- Visual Studio 2022 or a compatible IDE
+- .NET 8 SDK
+- SQL Server
+- SQL Server Management Studio (SSMS), if needed
+
+### Installation
+
+1. Clone or download this repository.
+2. Open the solution or project in Visual Studio.
+3. Update the database connection string in `appsettings.json` to match your SQL Server setup.
+4. Restore the NuGet packages.
+5. Apply the Entity Framework Core migrations if the project uses migrations.
+6. Run the application using Visual Studio or the .NET CLI.
+
+> **Note:** Database setup may require adjustments to the connection string and migration commands based on your local environment.
+
+##  Academic Purpose
+
+This project was developed as part of the **Web Technology with .NET** subject to demonstrate web application development, backend programming, database integration, transaction management, and dashboard design.
+
+##  Future Enhancements
+
+- User registration and secure authentication
+- Individual financial profiles
+- Recurring transactions and reminders
+- Monthly and yearly financial reports
+- Enhanced data visualization
+- Mobile-friendly improvements
+
+##  Author
+
+**Namrata Parmar**
+
+B.Tech – Information Technology
+
+**Subject:** Web Technology with .NET
+
+---
+
+⭐ If you find this project useful, feel free to explore the repository and its features.
