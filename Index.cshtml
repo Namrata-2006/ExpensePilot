@@ -1,0 +1,98 @@
+@model DashboardViewModel
+@using System.Globalization
+@{
+    ViewData["Title"] = "Overview";
+    var categories = (string[])ViewBag.Categories;
+    var maxMonthly = Math.Max(1, Model.MonthlyTotals.SelectMany(x => new[] { x.Income, x.Expense }).DefaultIfEmpty(0).Max());
+    var selectedMonth = Model.SelectedMonth.ToString("yyyy-MM");
+}
+@if (TempData["Success"] is string successMessage) { <div class="notice notice-success" role="status">@successMessage</div> }
+@if (TempData["Error"] is string errorMessage) { <div class="notice notice-error" role="alert">@errorMessage</div> }
+<section class="welcome-row">
+    <div><div class="eyebrow">YOUR FINANCIAL SNAPSHOT</div><h1>Good money habits<br /><span>start with awareness.</span></h1><p class="subhead">A calm space to track what comes in, what goes out, and what matters.</p></div>
+    <div class="month-picker"><label for="monthPicker">VIEWING PERIOD</label><input id="monthPicker" type="month" value="@selectedMonth" /><a class="text-link" href="@Url.Action("ExportCsv", new { month = Model.SelectedMonth.Month, year = Model.SelectedMonth.Year })">↓ Export CSV</a></div>
+</section>
+<section class="stats-grid">
+    <article class="stat-card stat-dark"><div class="stat-top"><span>NET CASH FLOW</span><span class="stat-icon">↗</span></div><div class="stat-value">@Model.BalanceThisMonth.ToString("C0", CultureInfo.GetCultureInfo("en-IN"))</div><div class="stat-bottom"><span class="tiny-dot"></span> Income minus expenses this month</div><div class="stat-decoration"></div></article>
+    <article class="stat-card"><div class="stat-top"><span>TOTAL INCOME</span><span class="stat-icon icon-green">↙</span></div><div class="stat-value">@Model.IncomeThisMonth.ToString("C0", CultureInfo.GetCultureInfo("en-IN"))</div><div class="stat-bottom">Money received this month</div><div class="stat-line green-line"></div></article>
+    <article class="stat-card"><div class="stat-top"><span>TOTAL SPENT</span><span class="stat-icon icon-orange">↗</span></div><div class="stat-value">@Model.ExpensesThisMonth.ToString("C0", CultureInfo.GetCultureInfo("en-IN"))</div><div class="stat-bottom">@Model.TransactionCount transactions recorded</div><div class="stat-line orange-line"></div></article>
+    <article class="stat-card"><div class="stat-top"><span>BUDGET LEFT</span><span class="stat-icon icon-purple">◎</span></div><div class="stat-value">@(Model.BudgetLimit > 0 ? Model.RemainingBudget.ToString("C0", CultureInfo.GetCultureInfo("en-IN")) : "—")</div><div class="stat-bottom">@(Model.BudgetLimit > 0 ? $"{Model.BudgetUsedPercent:0}% of budget used" : "Set a budget to get started")</div><div class="stat-line purple-line"></div></article>
+</section>
+<section class="main-grid">
+    <article class="panel trend-panel"><div class="panel-heading"><div><div class="eyebrow">MONEY MOVEMENT</div><h2>Income vs. spending</h2></div><span class="legend"><i class="legend-income"></i> Income <i class="legend-expense"></i> Spending</span></div>
+        <div class="chart-area">
+        @foreach (var m in Model.MonthlyTotals) {
+            var incomeHeight = (double)(m.Income / maxMonthly * 100); var expenseHeight = (double)(m.Expense / maxMonthly * 100);
+            <div class="chart-column"><div class="bar-pair"><div class="bar income-bar" style="height:@(Math.Max(m.Income > 0 ? 4 : 0, incomeHeight))%" title="Income: @m.Income.ToString("C")"></div><div class="bar expense-bar" style="height:@(Math.Max(m.Expense > 0 ? 4 : 0, expenseHeight))%" title="Spending: @m.Expense.ToString("C")"></div></div><span class="chart-label">@m.Label</span></div>
+        }
+        </div><div class="chart-note"><span class="note-mark">✦</span> A clearer picture comes from tracking consistently.</div>
+    </article>
+    <article class="panel budget-panel" id="budget"><div class="panel-heading"><div><div class="eyebrow">SPEND WITH INTENTION</div><h2>Monthly budget</h2></div><span class="round-icon">◎</span></div>
+        @if (Model.BudgetLimit > 0) {
+            <div class="budget-amount"><strong>@Model.ExpensesThisMonth.ToString("C0", CultureInfo.GetCultureInfo("en-IN"))</strong><span>of @Model.BudgetLimit.ToString("C0", CultureInfo.GetCultureInfo("en-IN"))</span></div>
+            <div class="progress-track"><div class="progress-fill @(Model.BudgetUsedPercent >= 100 ? "over" : Model.BudgetUsedPercent >= 80 ? "warning" : "")" style="width:@Model.BudgetUsedPercent%"></div></div>
+            <div class="budget-foot"><span>@Model.BudgetUsedPercent.ToString("0")% used</span><span>@Model.RemainingBudget.ToString("C0", CultureInfo.GetCultureInfo("en-IN")) left</span></div>
+        } else { <div class="budget-empty"><div class="empty-icon">◎</div><strong>Give your money a plan</strong><p>Set a monthly limit and ExpensePilot will keep an eye on your progress.</p></div> }
+        <form asp-action="SaveBudget" method="post" class="budget-form">
+            @Html.AntiForgeryToken()<input type="hidden" name="month" value="@Model.SelectedMonth.Month"/><input type="hidden" name="year" value="@Model.SelectedMonth.Year"/>
+            <label for="budgetLimit">MONTHLY LIMIT (₹)</label><div class="budget-input-row"><input id="budgetLimit" name="limit" type="number" min="1" max="999999999" step="0.01" placeholder="e.g. 12000" value="@(Model.BudgetLimit > 0 ? Model.BudgetLimit.ToString("0.##", CultureInfo.InvariantCulture) : "")" required/><button class="btn btn-dark" type="submit">Save budget ↗</button></div>
+        </form>
+        <div class="monthly-income-block">
+            <div class="income-heading">
+                <div><div class="eyebrow">PLAN AHEAD</div><h3>Monthly income</h3></div>
+                <span class="income-badge">₹</span>
+            </div>
+            <p class="subhead">Set the expected income for @Model.SelectedMonth.ToString("MMMM yyyy", CultureInfo.InvariantCulture). This is separate from individual income transactions.</p>
+            @if (Model.MonthlyIncomeAmount > 0)
+            {
+                <div class="monthly-income-saved">Saved amount <strong>@Model.MonthlyIncomeAmount.ToString("C0", CultureInfo.GetCultureInfo("en-IN"))</strong></div>
+            }
+            <form asp-action="SaveMonthlyIncome" method="post" class="budget-form monthly-income-form">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="month" value="@Model.SelectedMonth.Month" />
+                <input type="hidden" name="year" value="@Model.SelectedMonth.Year" />
+                <label for="monthlyIncomeAmount">EXPECTED MONTHLY INCOME (₹)</label>
+                <div class="budget-input-row">
+                    <input id="monthlyIncomeAmount" name="amount" type="number" min="0.01" max="999999999" step="0.01" placeholder="e.g. 30000" value="@(Model.MonthlyIncomeAmount > 0 ? Model.MonthlyIncomeAmount.ToString("0.##", CultureInfo.InvariantCulture) : "")" required />
+                    <button class="btn btn-dark" type="submit">Save income ↗</button>
+                </div>
+            </form>
+        </div>
+    </article>
+</section>
+<section class="main-grid lower-grid">
+    <article class="panel transactions-panel" id="transactions"><div class="panel-heading"><div><div class="eyebrow">YOUR MONEY ACTIVITY</div><h2>Recent transactions</h2></div><button class="btn btn-primary" type="button" id="openExpense">＋ Add transaction</button></div>
+        @if (!Model.RecentTransactions.Any()) { <div class="empty-state"><div class="empty-icon">↗</div><h3>Your story starts here</h3><p>Add your first transaction to see your money patterns come to life.</p><button class="btn btn-primary" type="button" id="openExpenseEmpty">＋ Add first transaction</button></div> }
+        else {
+            <div class="transaction-table-wrap"><table class="transaction-table"><thead><tr><th>TRANSACTION</th><th>DATE</th><th>TYPE</th><th class="amount-cell">AMOUNT</th><th></th></tr></thead><tbody>
+            @foreach (var item in Model.RecentTransactions) {
+                var icon = item.Category switch { "Food" => "◉", "Transport" => "↗", "Shopping" => "◇", "Bills" => "▤", "Health" => "+", "Education" => "⌘", "Entertainment" => "♫", "Travel" => "✈", "Home" => "⌂", _ => "•" };
+                <tr><td><div class="transaction-name"><span class="category-icon cat-@item.Category.ToLowerInvariant()">@icon</span><span><strong>@item.Title</strong><small>@item.Category @if (item.Type == "Expense") { <text>· @item.SpendingKind</text> }</small></span></div></td><td class="date-cell">@item.Date.ToString("dd MMM yyyy")</td><td><span class="type-pill @(item.Type == "Income" ? "pill-income" : "pill-expense")">@item.Type</span></td><td class="amount-cell @(item.Type == "Income" ? "amount-positive" : "")">@(item.Type == "Income" ? "+" : "−")@item.Amount.ToString("C", CultureInfo.GetCultureInfo("en-IN"))</td><td><form asp-action="Delete" method="post" onsubmit="return confirm('Delete this transaction?');">@Html.AntiForgeryToken()<input type="hidden" name="id" value="@item.Id"/><button type="submit" class="icon-button" title="Delete transaction" aria-label="Delete transaction">×</button></form></td></tr>
+            }
+            </tbody></table></div>
+        }
+    </article>
+    <div class="right-stack">
+        <article class="panel category-panel"><div class="panel-heading"><div><div class="eyebrow">WHERE IT GOES</div><h2>Spending mix</h2></div><span class="round-icon">◔</span></div>
+            @if (!Model.CategoryTotals.Any()) { <div class="small-empty">Your category breakdown will appear once you add expenses.</div> }
+            else { <div class="category-list">@foreach (var c in Model.CategoryTotals.Take(5)) { <div class="category-row"><div class="category-meta"><span>@c.Category</span><strong>@c.Amount.ToString("C0", CultureInfo.GetCultureInfo("en-IN"))</strong></div><div class="category-track"><div class="category-fill" style="width:@c.Percent%"></div></div><div class="category-percent">@c.Percent.ToString("0.#")% of spending</div></div> }</div> }
+        </article>
+        <article class="panel insights-panel" id="insights"><div class="panel-heading"><div><div class="eyebrow">A LITTLE FINANCIAL CLARITY</div><h2>Smart insights</h2></div><span class="sparkle">✧</span></div>
+            <div class="insight-list">@foreach (var insight in Model.Insights) { <div class="insight-item"><span class="insight-bullet">✦</span><p>@insight</p></div> }</div>
+            <div class="insight-disclaimer">Insights use your recorded transactions. They are guidance, not financial advice.</div>
+        </article>
+    </div>
+</section>
+<div class="modal-backdrop" id="expenseModal" aria-hidden="true"><section class="expense-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><div class="modal-head"><div><div class="eyebrow">LOG YOUR MONEY</div><h2 id="modalTitle">Add a transaction</h2></div><button type="button" class="close-modal" id="closeExpense" aria-label="Close">×</button></div>
+    <form asp-action="AddExpense" method="post" id="expenseForm">@Html.AntiForgeryToken()
+        <div class="type-toggle"><label><input type="radio" name="Type" value="Expense" checked/><span>− Expense</span></label><label><input type="radio" name="Type" value="Income"/><span>＋ Income</span></label></div>
+        <div class="form-grid"><div class="form-field full"><label for="Title">WHAT WAS IT FOR?</label><input id="Title" name="Title" maxlength="80" placeholder="e.g. Lunch with friends" required/></div>
+        <div class="form-field"><label for="Amount">AMOUNT (₹)</label><input id="Amount" name="Amount" type="number" min="0.01" max="99999999" step="0.01" placeholder="0.00" required/></div>
+        <div class="form-field"><label for="Date">DATE</label><input id="Date" name="Date" type="date" value="@DateTime.Today.ToString("yyyy-MM-dd")" required/></div>
+        <div class="form-field"><label for="Category">CATEGORY</label><select id="Category" name="Category">@foreach (var category in categories) { <option value="@category">@category</option> }</select></div>
+        <div class="form-field" id="spendingKindField"><label for="SpendingKind">NEED OR WANT?</label><select id="SpendingKind" name="SpendingKind"><option value="Need">Need — essential</option><option value="Want">Want — optional</option></select></div>
+        <div class="form-field full"><label for="Notes">NOTE (OPTIONAL)</label><textarea id="Notes" name="Notes" maxlength="250" rows="2" placeholder="A little context for future you..."></textarea></div></div>
+        <div class="modal-actions"><button class="btn btn-quiet" type="button" id="cancelExpense">Cancel</button><button class="btn btn-primary" type="submit">Save transaction ↗</button></div>
+    </form>
+</section></div>
+@section Scripts { <script>window.expensePilot = { selectedMonth: "@selectedMonth" };</script> }

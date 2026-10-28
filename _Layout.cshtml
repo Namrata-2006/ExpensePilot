@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - ExpensePilot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+</head>
+<body>
+    <div class="app-shell">
+        <aside class="sidebar">
+            <a class="brand" asp-controller="Home" asp-action="Index"><span class="brand-mark">✳</span><span>expense<span class="brand-light">pilot</span><small>YOUR MONEY, IN FOCUS</small></span></a>
+            <div class="nav-label">WORKSPACE</div>
+            <a class="nav-link active" asp-controller="Home" asp-action="Index"><span>◫</span> Overview</a>
+            <a class="nav-link" href="#transactions"><span>⇄</span> Transactions</a>
+            <a class="nav-link" href="#insights"><span>✧</span> Smart insights</a>
+            <a class="nav-link" href="#budget"><span>◎</span> Budget planner</a>
+            <div class="sidebar-bottom"><div class="mini-orb">✦</div><strong>Small steps add up.</strong><p>Build better money habits, one day at a time.</p><div class="sidebar-foot">PERSONAL FINANCE · 2026</div></div>
+        </aside>
+        <main class="main-content">
+            <header class="topbar"><div><div class="eyebrow">PERSONAL FINANCE / DASHBOARD</div><div class="top-title">Your money, made clearer.</div></div><div class="top-actions"><span class="status-dot"></span><span class="live-label">LOCAL DATABASE</span><div class="avatar">EP</div></div></header>
+            @if (TempData["Success"] != null) { <div class="toast toast-success">✓ @TempData["Success"]</div> }
+            @if (TempData["Error"] != null) { <div class="toast toast-error">! @TempData["Error"]</div> }
+            @RenderBody()
+            <footer class="footer">ExpensePilot <span>·</span> A smarter relationship with money.</footer>
+        </main>
+    </div>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>
